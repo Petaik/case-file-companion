@@ -702,27 +702,27 @@ function gradeTheory(c, suspect, text) {
   let score = 0;
   const lower = text.toLowerCase();
 
-  // Correct suspect: 40 points
+  // Correct suspect: 45 points
   const correctSuspect = suspect === c.answer;
-  if (correctSuspect) score += 40;
+  if (correctSuspect) score += 45;
 
-  // Keyword matches: up to 40 points
+  // Keyword matches: up to 35 points (linear — each keyword earns equal share)
   const matched = c.keywords.filter(k => lower.includes(k.toLowerCase()));
-  score += Math.min(40, matched.length * (40 / c.keywords.length) * (matched.length / c.keywords.length) * 2.5);
+  score += Math.round((matched.length / c.keywords.length) * 35);
 
   // Length/detail bonus: up to 20 points
   const wordCount = text.split(/\s+/).filter(Boolean).length;
   if (wordCount >= 40) score += 20;
-  else if (wordCount >= 20) score += 12;
+  else if (wordCount >= 20) score += 13;
   else if (wordCount >= 10) score += 6;
 
-  // Difficulty modifier
-  if (c.difficulty === 'hard') score = Math.round(score * 0.85);
-  if (c.difficulty === 'easy') score = Math.min(100, Math.round(score * 1.1));
+  // Difficulty modifier — softer cap so hard cases can still reach 90+
+  if (c.difficulty === 'hard') score = Math.round(score * 0.95);
+  if (c.difficulty === 'easy') score = Math.min(100, Math.round(score * 1.05));
 
-  // Penalty for hints used
+  // Hint penalty — reduced to 3 points per hint so it does not tank a good theory
   const hintsUsedOnCase = state.hintCounts[c.id] || 0;
-  score = Math.max(0, score - hintsUsedOnCase * 5);
+  score = Math.max(0, score - hintsUsedOnCase * 3);
 
   return Math.min(100, Math.round(score));
 }
